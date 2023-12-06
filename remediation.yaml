@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  CheckForDefaultEncryptedVolumes:
+    Description: Ebs encryption config rule name.
+    Type: String
+
+Resources:
+  EBSDefaultEncryptionEnabledRemediation:
+      Type: "AWS::Config::RemediationConfiguration"
+      Properties:
+        Automatic: true
+        MaximumAutomaticAttempts: 5
+        RetryAttemptSeconds: 60
+        ConfigRuleName: !Ref CheckForDefaultEncryptedVolumes
+        Parameters:
+          AutomationAssumeRole:
+            StaticValue:
+              Values: 
+              - !GetAtt RemdiationRole.Arn
+        TargetId: "AWSConfigRemediation-EnableEbsEncryptionByDefault"
+        TargetType: "SSM_DOCUMENT"
+        TargetVersion: "1"
+
+   RemdiationRole:
+     Type: AWS::IAM::Role
+     Properties:
+       Description: A service role for System Manager to run Automation Remediation
+       AssumeRolePolicyDocument:
+         Version: '2012-10-17'
+         Statement:
+           Effect: Allow
+           Principal:
+             Service: ssm.amazonaws.com
+           Action: sts:AssumeRole
+       Path: '/'
+       Policies:
+         - PolicyName: !Sub 'remediation-policy-${AWS::AccountId}-${AWS::Region}'
+           PolicyDocument:
+             Version: '2012-10-17'
+             Statement:
+               - Effect: Allow
+                 Resource:
+                 - '*'
+                 Action:
+                 - 'ec2:GetEbsEncryptionByDefault'
+                 - 'ec2:EnableEbsEncryptionByDefault'

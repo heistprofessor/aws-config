@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  EBSDefaultEncryptionRule:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: !Sub 'Ebs-default-encryption-${AWS::AccountId}-${AWS::Region}'
+      Description: Checks whether new EBS volumes are encrypted by default
+      Scope:
+        ComplianceResourceTypes:
+          - AWS::EC2::Volume
+      Source:
+        Owner: AWS
+        SourceIdentifier: EC2_EBS_ENCRYPTION_BY_DEFAULT
+
+Outputs:
+  EBSDefaultEncryptionRule:
+    Description: Output for EBS default encryption by default
+    Value: !Ref EBSDefaultEncryptionRule
